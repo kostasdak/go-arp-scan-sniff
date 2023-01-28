@@ -37,7 +37,8 @@ Usage of arpscansniff.exe:
 
 ## Examples and Use cases
 
-Scan network and get all MAC from active devices.
+* Scan network and get all MAC from active devices.
+***
 
 ```shell
 ./arpscansniff.exe
