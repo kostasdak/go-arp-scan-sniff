@@ -88,7 +88,7 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 13:50:50.164675 -050
 - Layer 3 (00 bytes) = IGMP     {Contents=[] Payload=[] Type=IGMP Membership Query MaxResponseTime=10s Checksum=65184 GroupAddress=239.255.255.250 Version=2}
 ```
 
-* Sniff network and get all ARP packets including devices that are NOT in the same IP Range, perfect for finding lost or misconfigured devices
+* Sniff network and get all ARP packets including devices that are NOT in the same IP Range, perfect for finding lost or misconfigured devices, or devices that they don't get IP Address from DHCP
 
 ```shell
 ./arpscansniff.exe -type sniff -filter arp
@@ -96,7 +96,7 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 13:50:50.164675 -050
 2023/01/28 13:46:19 Interface IP Address : 192.168.1.100
 
 2023/01/28 13:46:19 Start monitoring interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
-2023/01/28 13:46:19 Active filter :  arp
+2023/01/28 13:46:19 Filter applied :  arp
 
 ARP Packet From : 34:17:eb:c2:03:03 = 192.168.1.100, to : 30:23:03:6b:d8:cc, 192.168.1.1
 PACKET: 42 bytes, wire length 42 cap length 42 @ 2023-01-28 13:46:29.266638 -0500 EST
@@ -112,7 +112,7 @@ PACKET: 42 bytes, wire length 42 cap length 42 @ 2023-01-28 13:46:29.266638 -050
 2023/01/28 14:12:38 Interface IP Address : 192.168.1.100
 
 2023/01/28 14:12:38 Start monitoring interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
-2023/01/28 14:12:38 Active filter :  tcp and port 80
+2023/01/28 14:12:38 Filter applied :  tcp and port 80
 
 Packet From : 30:23:03:6b:d8:cc = 89.187.179.132, to : 34:17:eb:c2:03:03, 192.168.1.100
 PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 14:12:48.951066 -0500 EST
@@ -139,7 +139,5 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 14:12:58.970235 -050
 - Layer 3 (20 bytes) = TCP      {Contents=[..20..] Payload=[] SrcPort=80(http) DstPort=36273 Seq=2570368392 Ack=1583498992 DataOffset=5 FIN=false SYN=false RST=false PSH=false ACK=true URG=false ECE=false CWR=false NS=false Window=63966 Checksum=25752 Urgent=0 Options=[] Padding=[]}
 ```
 
-
-Devices that they don't get IP Address from DHCP Server
 
 </br>

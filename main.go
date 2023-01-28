@@ -138,7 +138,7 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 
 	// Apply BPF Filter if exists
 	if *packetFilter != "" {
-		log.Println("Active filter : ", *packetFilter)
+		log.Println("Filter applied : ", *packetFilter)
 		err := handle.SetBPFFilter(*packetFilter)
 		if err != nil {
 			log.Fatalf("error using BPF Filter %s - %v", *packetFilter, err)
