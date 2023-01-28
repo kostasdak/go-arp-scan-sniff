@@ -38,7 +38,6 @@ Usage of arpscansniff.exe:
 ## Examples and Use cases
 
 * Scan network and get all MAC from active devices.
-***
 
 ```shell
 ./arpscansniff.exe
@@ -52,8 +51,9 @@ IP   192.168.1.116 -> 12:8c:b1:ac:0a:5b -> unknown
 IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 ```
+***
 
-Scan network and get all MAC from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
+* Scan network and get all MAC from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
 
 ```shell
 ./arpscansniff.exe -mac b4:7c:9c
