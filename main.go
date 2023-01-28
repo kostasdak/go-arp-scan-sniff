@@ -127,7 +127,6 @@ func buildIPs(n *net.IPNet) (out []net.IP) {
 func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 	fmt.Println("")
 	log.Printf("Start monitoring interface: %v", deviceWinId)
-	fmt.Println("")
 
 	// Open Device, packet size 1024
 	handle, err := pcap.OpenLive(deviceWinId, 1024, *promiscuousMode, timeout)
@@ -145,6 +144,8 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 			log.Fatalf("error using BPF Filter %s - %v", *packetFilter, err)
 		}
 	}
+
+	fmt.Println("")
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
@@ -166,7 +167,6 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 			}
 		} else {
 			if len(packet.Layers()) == 3 {
-				//:= packet.Layers()[1]
 				ipLayer := packet.Layer(layers.LayerTypeIPv4)
 				ipData := ipLayer.(*layers.IPv4)
 				ethLayer := packet.Layer(layers.LayerTypeEthernet)
