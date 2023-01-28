@@ -18,17 +18,15 @@ import (
 )
 
 var scanType = flag.String("type", "scan", "Choose between scan OR sniff, scan network every 10 sec or sniff all packets")
-var packetFilter = flag.String("filter", "", "Packet filter for capture, e.g. arp / tcp and port 80 / udp and port 53")
+var packetFilter = flag.String("filter", "", "Packet filter for capture, e.g. arp / udp / tcp and port 80")
 var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full mac) 80:ce:62:e8:9b:f5")
-var packetLen = flag.Int("len", 1024, "Maximun size to read for each packet, ")
 var promiscuousMode = flag.Bool("promisc", false, "Enable promiscuous mode to monitor network,  (default false)")
-var timeoutConnection = flag.Int("timeout", 30, "Connection Timeout in seconds, ")
 var mac = map[string]string{}
 
 func main() {
 	flag.Parse()
 
-	var timeout time.Duration = time.Duration(*timeoutConnection) * time.Second
+	var timeout time.Duration = time.Duration(30) * time.Second
 
 	// Get a list of all interfaces.
 	ifaces, err := net.Interfaces()
@@ -129,8 +127,8 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 	log.Printf("Start monitoring interface: %v", deviceWinId)
 	fmt.Println("")
 
-	// Open Device
-	handle, err := pcap.OpenLive(deviceWinId, int32(*packetLen), *promiscuousMode, timeout)
+	// Open Device, packet size 1024
+	handle, err := pcap.OpenLive(deviceWinId, 1024, *promiscuousMode, timeout)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -153,16 +151,28 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 		// 2. Data link
 		// 3. Network
 		// 4. Transport
-
-		if len(packet.Layers()) == 2 {
-			osiLayer := packet.Layer(layers.LayerTypeARP)
-			netData := osiLayer.(*layers.ARP)
-			fmt.Printf("ARP Packet From : %v = %v, to : %v, %v\r\n",
-				net.HardwareAddr(netData.SourceHwAddress),
-				net.IP(netData.SourceProtAddress),
-				net.HardwareAddr(netData.DstHwAddress),
-				net.IP(netData.DstProtAddress))
-			fmt.Println(packet)
+		if strings.ToLower(*packetFilter) == "arp" {
+			if len(packet.Layers()) == 2 {
+				osiLayer := packet.Layer(layers.LayerTypeARP)
+				arpData := osiLayer.(*layers.ARP)
+				fmt.Printf("ARP Packet From : %v = %v, to : %v, %v\r\n",
+					net.HardwareAddr(arpData.SourceHwAddress),
+					net.IP(arpData.SourceProtAddress),
+					net.HardwareAddr(arpData.DstHwAddress),
+					net.IP(arpData.DstProtAddress))
+				fmt.Println(packet)
+			}
+		} else {
+			if len(packet.Layers()) == 3 {
+				osiLayer := packet.Layer(layers.LayerTypeEthernet)
+				arpData := osiLayer.(*layers.ARP)
+				fmt.Printf("Packet From : %v = %v, to : %v, %v\r\n",
+					net.HardwareAddr(arpData.SourceHwAddress),
+					net.IP(arpData.SourceProtAddress),
+					net.HardwareAddr(arpData.DstHwAddress),
+					net.IP(arpData.DstProtAddress))
+				fmt.Println(packet)
+			}
 		}
 	}
 }
