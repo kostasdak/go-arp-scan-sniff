@@ -20,24 +20,20 @@ It will provide you all the info from the ARP packet traffic around the network.
 
 ## Usage
 ```shell
-Usage of arpscansniff.exe:
+Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
   -filter string
-        Packet filter for capture, e.g. arp / tcp and port 80 / udp and port 53
-  -len int
-        Maximun size to read for each packet,  (default 1024)
+        Packet filter for capture, e.g. arp / udp / tcp and port 80
   -mac string
         Mac address filter, e.g. (3 digits) 30:23:03 / (full mac) 80:ce:62:e8:9b:f5
   -promisc
         Enable promiscuous mode to monitor network,  (default false)
-  -timeout int
-        Connection Timeout in seconds,  (default 30)
   -type string
         Choose between scan OR sniff, scan network every 10 sec or sniff all packets (default "scan")
 ```
 
 ## Examples and Use cases
 
-* Scan network and get all MAC from active devices.
+* Scan network and get all MAC addresses from active devices.
 
 ```shell
 ./arpscansniff.exe
@@ -53,7 +49,7 @@ IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 ```
 ***
 
-* Scan network and get all MAC from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
+* Scan network and get all MAC addresses from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
 
 ```shell
 ./arpscansniff.exe -mac b4:7c:9c
@@ -62,7 +58,15 @@ IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 *
 IP   192.168.1.107 -> b4:7c:9c:7d:43:4d -> Amazon Technologies Inc.
 ```
+***
+
+* Sniff network and get all ARP packets 
+
+
+
+
 
 
 Devices that they don't get IP Address from DHCP Server
+
 </br>

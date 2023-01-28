@@ -28,6 +28,8 @@ func main() {
 
 	var timeout time.Duration = time.Duration(30) * time.Second
 
+	//fmt.Println(strings.ToLower(*packetFilter))
+
 	// Get a list of all interfaces.
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -164,13 +166,17 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 			}
 		} else {
 			if len(packet.Layers()) == 3 {
-				osiLayer := packet.Layer(layers.LayerTypeEthernet)
-				arpData := osiLayer.(*layers.ARP)
+				//:= packet.Layers()[1]
+				ipLayer := packet.Layer(layers.LayerTypeIPv4)
+				ipData := ipLayer.(*layers.IPv4)
+				ethLayer := packet.Layer(layers.LayerTypeEthernet)
+				ethData := ethLayer.(*layers.Ethernet)
+
 				fmt.Printf("Packet From : %v = %v, to : %v, %v\r\n",
-					net.HardwareAddr(arpData.SourceHwAddress),
-					net.IP(arpData.SourceProtAddress),
-					net.HardwareAddr(arpData.DstHwAddress),
-					net.IP(arpData.DstProtAddress))
+					ethData.SrcMAC,
+					ipData.SrcIP,
+					ethData.DstMAC,
+					ipData.DstIP)
 				fmt.Println(packet)
 			}
 		}
