@@ -60,8 +60,20 @@ IP   192.168.1.107 -> b4:7c:9c:7d:43:4d -> Amazon Technologies Inc.
 ```
 ***
 
-* Sniff network and get all ARP packets 
+* Sniff network and get all ARP packets including devices that are NOT in the same IP Range, perfect for finding lost or misconfigured devices
+```shell
+./arpscansniff.exe -type sniff -filter arp
+2023/01/28 13:46:19 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
+2023/01/28 13:46:19 Interface IP Address : 192.168.1.100
 
+2023/01/28 13:46:19 Start monitoring interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
+2023/01/28 13:46:19 Active filter :  arp
+
+ARP Packet From : 34:17:eb:c2:03:03 = 192.168.1.100, to : 30:23:03:6b:d8:cc, 192.168.1.1
+PACKET: 42 bytes, wire length 42 cap length 42 @ 2023-01-28 13:46:29.266638 -0500 EST
+- Layer 1 (14 bytes) = Ethernet {Contents=[..14..] Payload=[..28..] SrcMAC=34:17:eb:c2:03:03 DstMAC=30:23:03:6b:d8:cc EthernetType=ARP Length=0}
+- Layer 2 (28 bytes) = ARP      {Contents=[..28..] Payload=[] AddrType=Ethernet Protocol=IPv4 HwAddressSize=6 ProtAddressSize=4 Operation=2 SourceHwAddress=[..6..] SourceProtAddress=[192, 168, 1, 100] DstHwAddress=[..6..] DstProtAddress=[192, 168, 1, 1]}
+```
 
 
 
