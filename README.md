@@ -8,7 +8,7 @@ It contains a manufacturer database to resolve each mac address to the Brand nam
 
 Inspired from many packet sniffers around github and https://pkg.go.dev/github.com/google/gopacket package.</br>
 
-##Usage
+## Usage
 ```shell
 Usage of arpscansniff.exe:
   -filter string
@@ -25,6 +25,6 @@ Usage of arpscansniff.exe:
         Choose between scan OR sniff, scan network every 10 sec or sniff all packets (default "scan")
 ```
 
-##Examples and Use cases
+## Examples and Use cases
 
 </br>
