@@ -4,7 +4,7 @@ CLI command for scanning and monitoring ARP Packets, discover devices, trooblesh
 
 ## Overview
 This is a Golang CLI command easy to use and troobleshoot local networks Link Layer (OSI Model Layer 2).</br>
-It contains a manufacturer database to resolve each mac address to the Brand name that belogs.</br>
+It contains a manufacturer database to resolve each mac address to the Brand/Manufacturer that belogs.</br>
 
 Inspired from many packet sniffers around github and https://pkg.go.dev/github.com/google/gopacket package.</br>
 </br>
@@ -17,6 +17,9 @@ ARP Scan does't guarandee responce from all devices especially the devices that 
 ### Sniff
 Command will run and listen your active network connection for any ARP packets running around your local network.
 It will provide you all the info from the ARP packet traffic around the network.
+
+## Build
+**$ go build -o arpscansniff.exe *.go**
 
 ## Usage
 **$ ./arpscansniff.exe --help**
