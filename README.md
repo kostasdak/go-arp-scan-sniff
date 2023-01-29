@@ -19,7 +19,7 @@ Command will run and listen your active network connection for any ARP packets r
 It will provide you all the info from the ARP packet traffic around the network.
 
 ## Build
-**$ go build -o arpscansniff.exe *.go**
+__$ go build -o arpscansniff.exe *.go__
 
 ## Usage
 **$ ./arpscansniff.exe --help**
