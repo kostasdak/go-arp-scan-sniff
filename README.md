@@ -19,8 +19,8 @@ Command will run and listen your active network connection for any ARP packets r
 It will provide you all the info from the ARP packet traffic around the network.
 
 ## Usage
+**$ ./arpscansniff.exe --help**
 ```shell
-./arpscansniff.exe --help
 Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
   -filter string
         Packet filter for capture, e.g. arp / all (default "arp")
@@ -55,8 +55,8 @@ IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 
 * Scan network and get all MAC addresses from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
 
+**$ ./arpscansniff.exe -mac b4:7c:9c**
 ```shell
-./arpscansniff.exe -mac b4:7c:9c
 2023/01/28 12:57:07 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:57:07 Interface IP Address : 192.168.1.100
 *
@@ -66,8 +66,8 @@ IP   192.168.1.107 -> b4:7c:9c:7d:43:4d -> Amazon Technologies Inc.
 
 * Sniff network and log all traffic (Layers 1, 2, 3 & 4) -> 1. Physical, 2. Data link, 3. Network & 4. Transport
 
+**$ ./arpscansniff.exe -type sniff -filter all**
 ```shell
-./arpscansniff.exe -type sniff -filter all
 2023/01/28 21:46:04 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 21:46:04 Interface IP Address : 192.168.1.100
 
@@ -92,8 +92,8 @@ In this example I m executing the command from 192.168.1.100 and I found a devic
 this is perfect to find lost or misconfigured devices, or devices that are defective and they don't get 
 IP Address from DHCP (they don't send DHCP request on boot). See Layer 4 DHCP request below.
 
+**$ ./arpscansniff.exe -type sniff**
 ```shell
-./arpscansniff.exe -type sniff
 2023/01/28 16:26:38 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 16:26:38 Interface IP Address : 192.168.1.100
 
@@ -123,8 +123,8 @@ PACKET: 148 bytes, wire length 148 cap length 148 @ 2023-01-28 22:12:15.280752 -
 
 * Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range and the mac address starts with 30:23:03 
 
+**$ ./arpscansniff.exe -type sniff -mac 30:23:03**
 ```shell
-./arpscansniff.exe -type sniff -mac 30:23:03
 2023/01/28 21:59:50 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 21:59:50 Interface IP Address : 192.168.1.100
 
@@ -140,8 +140,8 @@ PACKET: 42 bytes, wire length 42 cap length 42 @ 2023-01-28 21:59:58.059243 -050
 
 * Sniff network and get first 20 packets only from the mac address that starts with 08:9e:01 
 
+**$ ./arpscansniff.exe -type sniff -filter all -mac 08:9e:01 -limit 20**
 ```shell
-./arpscansniff.exe -type sniff -filter all -mac 08:9e:01 -limit 20
 2023/01/28 22:50:51 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 22:50:51 Interface IP Address : 192.168.1.100
 
