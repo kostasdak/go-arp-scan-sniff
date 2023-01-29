@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 
 var scanType = flag.String("type", "scan", "Choose between scan / sniff, scan network every 10 sec or sniff all packets")
 var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
+var packetLimit = flag.Int("limit", 0, "Limit the amount of captured packets, use it in busy networks with -mac filter")
 var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full addr) 80:ce:62:e8:9b:f5")
 var promiscuousMode = flag.Bool("promisc", true, "Enable/Disable promiscuous mode to monitor network")
 var mac = map[string]string{}
@@ -139,6 +141,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 	log.Printf("Start monitoring interface: %v", deviceWinId)
 
 	myMac := net.HardwareAddr(iface.HardwareAddr).String()
+	packetCount := 0
 
 	// Open Device, packet size 1024
 	handle, err := pcap.OpenLive(deviceWinId, 65535, *promiscuousMode, pcap.BlockForever)
@@ -183,6 +186,10 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 					net.HardwareAddr(arpData.DstHwAddress),
 					net.IP(arpData.DstProtAddress))
 				fmt.Println(packet)
+				packetCount++
+				if packetCount == *packetLimit {
+					os.Exit(0)
+				}
 			}
 		} else {
 			ethLayer := packet.Layer(layers.LayerTypeEthernet)
@@ -233,6 +240,10 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 					}
 
 					fmt.Println(packet)
+					packetCount++
+					if packetCount == *packetLimit {
+						os.Exit(0)
+					}
 				}
 			}
 		}
