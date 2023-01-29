@@ -17,18 +17,26 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var scanType = flag.String("type", "scan", "Choose between scan OR sniff, scan network every 10 sec or sniff all packets")
-var packetFilter = flag.String("filter", "", "Packet filter for capture, e.g. arp / udp / tcp and port 80")
-var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full mac) 80:ce:62:e8:9b:f5")
-var promiscuousMode = flag.Bool("promisc", false, "Enable promiscuous mode to monitor network,  (default false)")
+var scanType = flag.String("type", "scan", "Choose between scan / sniff, scan network every 10 sec or sniff all packets")
+var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
+var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full addr) 80:ce:62:e8:9b:f5")
+var promiscuousMode = flag.Bool("promisc", true, "Enable/Disable promiscuous mode to monitor network")
 var mac = map[string]string{}
 
 func main() {
 	flag.Parse()
 
-	var timeout time.Duration = time.Duration(30) * time.Second
+	if strings.ToLower(*packetFilter) != "all" && strings.ToLower(*packetFilter) != "arp" {
+		log.Fatal("filter option must be arp / all")
+	}
+	if strings.ToLower(*scanType) != "scan" && strings.ToLower(*scanType) != "sniff" {
+		log.Fatal("scan type must be scan / sniff")
+	}
+
+	var timeout time.Duration = time.Duration(30) * time.Microsecond
 
 	//fmt.Println(strings.ToLower(*packetFilter))
+	//fmt.Println(*promiscuousMode)
 
 	// Get a list of all interfaces.
 	ifaces, err := net.Interfaces()
@@ -43,6 +51,7 @@ func main() {
 	}
 
 	var deviceWinId = ""
+	var deviceWinInterface *net.Interface
 	var deviceIPnet *net.IPNet
 	//var test *net.IPNet
 	var iface net.Interface
@@ -50,7 +59,7 @@ func main() {
 	// Scan interfaces to find the correct one
 	for _, iface = range ifaces {
 		// get the first right network interface for sniffing.
-		deviceWinId, _, err = getRightInterface(&iface, &devices)
+		deviceWinId, deviceWinInterface, err = getRightInterface(&iface, &devices)
 		if err != nil {
 			log.Printf("Skipping interface %v: %v", iface.Name, err)
 		} else {
@@ -60,6 +69,7 @@ func main() {
 				if ipnet, ok := a.(*net.IPNet); ok {
 					if ip4 := ipnet.IP.To4(); ip4 != nil {
 						log.Printf("Interface IP Address : %v", ip4)
+
 						//deviceIPnet = *ipnet
 
 						deviceIPnet = &net.IPNet{
@@ -82,7 +92,7 @@ func main() {
 	// Build all IP Addresses from your network adapter
 	var allIPs = buildIPs(deviceIPnet)
 
-	if *scanType == "scan" {
+	if strings.ToLower(*scanType) == "scan" {
 
 		handle, err := pcap.OpenLive(deviceWinId, 65536, true, pcap.BlockForever)
 		if err != nil {
@@ -105,8 +115,8 @@ func main() {
 		}
 	}
 
-	if *scanType == "sniff" {
-		sniffMyNetwork(deviceWinId, timeout)
+	if strings.ToLower(*scanType) == "sniff" {
+		sniffMyNetwork(deviceWinId, deviceWinInterface, timeout)
 	}
 }
 
@@ -124,12 +134,14 @@ func buildIPs(n *net.IPNet) (out []net.IP) {
 	return
 }
 
-func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
+func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Duration) {
 	fmt.Println("")
 	log.Printf("Start monitoring interface: %v", deviceWinId)
 
+	myMac := net.HardwareAddr(iface.HardwareAddr).String()
+
 	// Open Device, packet size 1024
-	handle, err := pcap.OpenLive(deviceWinId, 1024, *promiscuousMode, timeout)
+	handle, err := pcap.OpenLive(deviceWinId, 65535, *promiscuousMode, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,10 +150,15 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 
 	// Apply BPF Filter if exists
 	if *packetFilter != "" {
-		log.Println("Filter applied : ", *packetFilter)
-		err := handle.SetBPFFilter(*packetFilter)
-		if err != nil {
-			log.Fatalf("error using BPF Filter %s - %v", *packetFilter, err)
+		if strings.ToLower(*packetFilter) == "arp" {
+			log.Println("Filter applied : ", *packetFilter)
+			err := handle.SetBPFFilter(*packetFilter)
+			if err != nil {
+				log.Fatalf("error using BPF Filter %s - %v", *packetFilter, err)
+			}
+		}
+		if strings.ToLower(*packetFilter) == "all" {
+			*packetFilter = ""
 		}
 	}
 
@@ -154,10 +171,12 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 		// 2. Data link
 		// 3. Network
 		// 4. Transport
+		layerVal := len(packet.Layers())
+
 		if strings.ToLower(*packetFilter) == "arp" {
-			if len(packet.Layers()) == 2 {
-				osiLayer := packet.Layer(layers.LayerTypeARP)
-				arpData := osiLayer.(*layers.ARP)
+			arpLayer := packet.Layer(layers.LayerTypeARP)
+			if arpLayer != nil {
+				arpData := arpLayer.(*layers.ARP)
 				fmt.Printf("ARP Packet From : %v = %v, to : %v, %v\r\n",
 					net.HardwareAddr(arpData.SourceHwAddress),
 					net.IP(arpData.SourceProtAddress),
@@ -166,17 +185,44 @@ func sniffMyNetwork(deviceWinId string, timeout time.Duration) {
 				fmt.Println(packet)
 			}
 		} else {
-			if len(packet.Layers()) == 3 {
-				ipLayer := packet.Layer(layers.LayerTypeIPv4)
-				ipData := ipLayer.(*layers.IPv4)
-				ethLayer := packet.Layer(layers.LayerTypeEthernet)
-				ethData := ethLayer.(*layers.Ethernet)
+			ethLayer := packet.Layer(layers.LayerTypeEthernet)
+			ethData := ethLayer.(*layers.Ethernet)
+			ipLayer := packet.Layer(layers.LayerTypeIPv4)
+			ip6Layer := packet.Layer(layers.LayerTypeIPv6)
 
-				fmt.Printf("Packet From : %v = %v, to : %v, %v\r\n",
-					ethData.SrcMAC,
-					ipData.SrcIP,
-					ethData.DstMAC,
-					ipData.DstIP)
+			// Exclude packets from my Mac
+			if myMac != net.HardwareAddr(ethData.DstMAC).String() && myMac != net.HardwareAddr(ethData.SrcMAC).String() {
+
+				if ipLayer != nil {
+					ipData := ipLayer.(*layers.IPv4)
+
+					fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+						layerVal,
+						ethData.SrcMAC,
+						ipData.SrcIP,
+						ethData.DstMAC,
+						ipData.DstIP,
+					)
+
+				} else if ip6Layer != nil {
+
+					ip6Data := ip6Layer.(*layers.IPv6)
+
+					fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+						layerVal,
+						ethData.SrcMAC,
+						ip6Data.SrcIP,
+						ethData.DstMAC,
+						ip6Data.DstIP,
+					)
+				} else {
+					fmt.Printf("Layer %v packet From : %v to : %v\r\n",
+						layerVal,
+						ethData.SrcMAC,
+						ethData.DstMAC,
+					)
+				}
+
 				fmt.Println(packet)
 			}
 		}
