@@ -38,7 +38,6 @@ Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
 
 ```shell
 ./arpscansniff.exe
-
 2023/01/28 12:43:58 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:43:58 Interface IP Address : 192.168.1.100
 *
@@ -55,7 +54,6 @@ IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 
 ```shell
 ./arpscansniff.exe -mac b4:7c:9c
-
 2023/01/28 12:57:07 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:57:07 Interface IP Address : 192.168.1.100
 *
@@ -84,6 +82,7 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 21:46:09.868655 -050
 - Layer 2 (20 bytes) = IPv4     {Contents=[..20..] Payload=[..8..] Version=4 IHL=5 TOS=192 Length=28 Id=44433 Flags= FragOffset=0 TTL=1 Protocol=IGMP Checksum=23019 SrcIP=192.168.1.1 DstIP=239.255.255.250 Options=[] Padding=[]}
 - Layer 3 (00 bytes) = IGMP     {Contents=[] Payload=[] Type=IGMP Membership Query MaxResponseTime=10s Checksum=65184 GroupAddress=239.255.255.250 Version=2}
 ```
+***
 
 * Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range, 
 In this example I m executing the command from 192.168.1.100 and I found a device that has IP 10.0.0.1
@@ -102,5 +101,21 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 16:26:38.416415 -050
 - Layer 2 (28 bytes) = ARP      {Contents=[..28..] Payload=[..18..] AddrType=Ethernet Protocol=IPv4 HwAddressSize=6 ProtAddressSize=4 Operation=1 SourceHwAddress=[..6..] SourceProtAddress=[10, 0, 0, 1] DstHwAddress=[..6..] DstProtAddress=[8, 8, 4, 4]}
 - Layer 3 (18 bytes) = Payload  18 byte(s)
 ```
+***
 
+* Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range and the mac address starts with 30:23:03 
+
+```shell
+./arpscansniff.exe -type sniff -mac 30:23:03
+2023/01/28 21:59:50 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
+2023/01/28 21:59:50 Interface IP Address : 192.168.1.100
+
+2023/01/28 21:59:51 Start monitoring interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
+2023/01/28 21:59:51 Filter applied :  arp
+
+ARP Packet From : 34:17:eb:c2:03:03 = 192.168.1.100, to : 30:23:03:6b:d8:cc, 192.168.1.1
+PACKET: 42 bytes, wire length 42 cap length 42 @ 2023-01-28 21:59:58.059243 -0500 EST
+- Layer 1 (14 bytes) = Ethernet {Contents=[..14..] Payload=[..28..] SrcMAC=34:17:eb:c2:03:03 DstMAC=30:23:03:6b:d8:cc EthernetType=ARP Length=0}
+- Layer 2 (28 bytes) = ARP      {Contents=[..28..] Payload=[] AddrType=Ethernet Protocol=IPv4 HwAddressSize=6 ProtAddressSize=4 Operation=1 SourceHwAddress=[..6..] SourceProtAddress=[192, 168, 1, 100] DstHwAddress=[..6..] DstProtAddress=[192, 168, 1, 1]}
+```
 </br>
