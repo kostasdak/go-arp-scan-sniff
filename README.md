@@ -84,9 +84,9 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 21:46:09.868655 -050
 ```
 ***
 
-* Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range, 
-In this example I m executing the command from 192.168.1.100 and I found a device that has IP 10.0.0.1
-Perfect for finding lost or misconfigured devices, or devices that they don't get IP Address from DHCP
+* Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range.
+In this example I m executing the command from 192.168.1.100 and I found a device that has IP 10.0.0.1,
+this is perfect to find lost or misconfigured devices, or devices that are defective and they don't get IP Address from DHCP (they don't send ARP request on boot)
 
 ```shell
 ./arpscansniff.exe -type sniff
