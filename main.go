@@ -37,9 +37,6 @@ func main() {
 
 	var timeout time.Duration = time.Duration(30) * time.Microsecond
 
-	//fmt.Println(strings.ToLower(*packetFilter))
-	//fmt.Println(*promiscuousMode)
-
 	// Get a list of all interfaces.
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -337,12 +334,12 @@ func sendARP_Packets(handle *pcap.Handle, iface *net.Interface, addresses []net.
 
 	arp := layers.ARP{
 		AddrType:          layers.LinkTypeEthernet,
-		Protocol:          layers.EthernetTypeIPv4, //layers.EthernetTypeARP, // layers.EthernetTypeIPv4,
+		Protocol:          layers.EthernetTypeIPv4,
 		HwAddressSize:     6,
 		ProtAddressSize:   4,
 		Operation:         layers.ARPRequest,
 		SourceHwAddress:   []byte(iface.HardwareAddr),
-		SourceProtAddress: []byte(addr.IP), //[]byte{0, 0, 0, 0}, //, //[]byte(addr.IP), //
+		SourceProtAddress: []byte(addr.IP),
 		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
 	}
 

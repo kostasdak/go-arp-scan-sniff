@@ -1,10 +1,10 @@
 # ARP packet scanner and sniffer with GoLang for Windows
 
-CLI command for scanning and monitoring ARP Packets, discover devices, troobleshoot defective devices and more.
+CLI command for scanning and monitoring ARP Packets, discover devices, troubleshoot defective devices and more.
 
 ## Overview
-This is a Golang CLI command easy to use and troobleshoot local networks Link Layer (OSI Model Layer 2).</br>
-It contains a manufacturer database to resolve each mac address to the Brand/Manufacturer that belogs.</br>
+This is a Golang CLI command easy to use and troubleshoot local networks Link Layer (OSI Model Layer 2).</br>
+It contains a manufacturer database to resolve each mac address to the Brand/Manufacturer that belongs.</br>
 
 Inspired from many packet sniffers around github and https://pkg.go.dev/github.com/google/gopacket package.</br>
 </br>
@@ -12,7 +12,7 @@ Choose between scan OR sniff, scan network every 10 sec or sniff all packets (de
 
 ### Scan
 Command will find your active network connection and automatically will scan all IP addresses.</br>
-ARP Scan does't guarandee responce from all devices especially the devices that they are in stand by mode thats why it will perform the scan every 10 seconds.</br>
+ARP Scan doesn’t guarantee response from all devices especially the devices that they are in stand by mode that’s why it will perform the scan every 10 seconds.</br>
 
 ### Sniff
 Command will run and listen your active network connection for any ARP packets running around your local network.
@@ -22,7 +22,7 @@ It will provide you all the info from the ARP packet traffic around the network.
 __$ go build -o arpscansniff.exe *.go__
 
 ## Usage
-**$ ./arpscansniff.exe --help**
+**$ arpscansniff.exe --help**
 ```shell
 Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
   -filter string
@@ -42,7 +42,7 @@ Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
 * Scan network and get all MAC addresses from active devices.
 
 
-**$ ./arpscansniff.exe**
+**$ arpscansniff.exe**
 ```shell
 2023/01/28 12:43:58 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:43:58 Interface IP Address : 192.168.1.100
@@ -58,7 +58,7 @@ IP   192.168.1.136 -> b8:d7:af:ae:4b:6a -> Murata Manufacturing Co., Ltd.
 
 * Scan network and get all MAC addresses from active devices that they start with b4:7c:9c (Amazon Technologies Inc.) 
 
-**$ ./arpscansniff.exe -mac b4:7c:9c**
+**$ arpscansniff.exe -mac b4:7c:9c**
 ```shell
 2023/01/28 12:57:07 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:57:07 Interface IP Address : 192.168.1.100
@@ -69,7 +69,7 @@ IP   192.168.1.107 -> b4:7c:9c:7d:43:4d -> Amazon Technologies Inc.
 
 * Sniff network and log all traffic (Layers 1, 2, 3 & 4) -> 1. Physical, 2. Data link, 3. Network & 4. Transport
 
-**$ ./arpscansniff.exe -type sniff -filter all**
+**$ arpscansniff.exe -type sniff -filter all**
 ```shell
 2023/01/28 21:46:04 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 21:46:04 Interface IP Address : 192.168.1.100
@@ -91,11 +91,11 @@ PACKET: 60 bytes, wire length 60 cap length 60 @ 2023-01-28 21:46:09.868655 -050
 ***
 
 * Sniff network and get ARP packets only, even from devices that are NOT in the same IP Range.
-In this example I m executing the command from 192.168.1.100 and I found a device that has IP 10.0.0.1,
+In this example I’m executing the command from 192.168.1.100 and I found a device that has IP 10.0.0.1,
 this is perfect to find lost or misconfigured devices, or devices that are defective and they don't get 
 IP Address from DHCP (they don't send DHCP request on boot). See Layer 4 DHCP request below.
 
-**$ ./arpscansniff.exe -type sniff**
+**$ arpscansniff.exe -type sniff**
 ```shell
 2023/01/28 16:26:38 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 16:26:38 Interface IP Address : 192.168.1.100
