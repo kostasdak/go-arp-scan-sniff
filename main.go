@@ -18,6 +18,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+var netInterface = flag.Int("iface", -1, "Override the automatic network card, choose a specific interface from the list")
 var scanType = flag.String("type", "scan", "Choose between scan / sniff, scan network every 10 sec or sniff all packets")
 var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
 var packetLimit = flag.Int("limit", 0, "Limit the amount of captured packets, use it in busy networks with -mac filter")
@@ -52,38 +53,51 @@ func main() {
 	var deviceWinId = ""
 	var deviceWinInterface *net.Interface
 	var deviceIPnet *net.IPNet
-	//var test *net.IPNet
 	var iface net.Interface
 
-	// Scan interfaces to find the correct one
-	for _, iface = range ifaces {
-		// get the first right network interface for sniffing.
-		deviceWinId, deviceWinInterface, err = getRightInterface(&iface, &devices)
-		if err != nil {
-			log.Printf("Skipping interface %v: %v", iface.Name, err)
-		} else {
-			log.Printf("Found interface: %v", deviceWinId)
-			addrs, _ := iface.Addrs()
-			for _, a := range addrs {
-				if ipnet, ok := a.(*net.IPNet); ok {
-					if ip4 := ipnet.IP.To4(); ip4 != nil {
-						log.Printf("Interface IP Address : %v", ip4)
+	// Loop through interfaces and display to user
+	for i, tmp := range ifaces {
+		fmt.Printf("#%v Interface : %v\r\n", i, tmp.Name)
+	}
 
-						//deviceIPnet = *ipnet
+	// User must choose the right interface
+	if *netInterface == -1 {
+		fmt.Println("choose a network interface by using the switch -iface folowing by the number of the interface")
+		os.Exit(0)
+	}
 
-						deviceIPnet = &net.IPNet{
-							IP:   ip4, //net.IPv4(0, 0, 0, 0), //ip4,
-							Mask: ipnet.Mask[len(ipnet.Mask)-4:],
-						}
-						break
+	// check if netInterface is valid
+	if *netInterface < 0 || *netInterface > len(ifaces) {
+		log.Fatalln("Wrong interface number !!!")
+		os.Exit(1)
+	}
+
+	// get the network interface for sniffing.
+	iface = ifaces[*netInterface]
+	deviceWinId, deviceWinInterface, err = getInterfaceParams(&iface, &devices)
+	if err != nil {
+		log.Fatalf("Skipping interface %v: %v\r\n", iface.Name, err)
+		os.Exit(1)
+	} else {
+		addrs, _ := iface.Addrs()
+		for _, a := range addrs {
+			if ipnet, ok := a.(*net.IPNet); ok {
+				if ip4 := ipnet.IP.To4(); ip4 != nil {
+					deviceIPnet = &net.IPNet{
+						IP:   ip4, //net.IPv4(0, 0, 0, 0), //ip4,
+						Mask: ipnet.Mask[len(ipnet.Mask)-4:],
 					}
+					break
 				}
 			}
-
-			break
 		}
-
 	}
+
+	// Displey info before start
+	fmt.Println("In case you want to choose a different network interface use the switch -iface folowing by the number of the interface")
+	fmt.Println("")
+	fmt.Printf("Found interface: %v -> %v\r\n", deviceWinInterface.Name, deviceWinId)
+	fmt.Printf("Interface IP Address : %v\r\n", deviceIPnet.IP)
 
 	// Build mac address list
 	json.Unmarshal([]byte(macJson), &mac)
@@ -247,7 +261,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 	}
 }
 
-func getRightInterface(iface *net.Interface, devices *[]pcap.Interface) (string, *net.Interface, error) {
+func getInterfaceParams(iface *net.Interface, devices *[]pcap.Interface) (string, *net.Interface, error) {
 	// Look for IPv4 addresses, try to find if the interface has one.
 	var addr *net.IPNet
 	if addrs, err := iface.Addrs(); err != nil {
