@@ -39,7 +39,7 @@ Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
 * Scan network and get all MAC addresses from active devices.
 
 ```shell
-./arpscansniff.exe
+$ ./arpscansniff.exe
 2023/01/28 12:43:58 Found interface: \Device\NPF_{DF41CF6B-EC4B-46E8-99A7-743F21A641D8}
 2023/01/28 12:43:58 Interface IP Address : 192.168.1.100
 *
