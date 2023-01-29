@@ -192,38 +192,48 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 
 			// Exclude packets from my Mac
 			if myMac != net.HardwareAddr(ethData.DstMAC).String() && myMac != net.HardwareAddr(ethData.SrcMAC).String() {
-
-				if ipLayer != nil {
-					ipData := ipLayer.(*layers.IPv4)
-
-					fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
-						layerVal,
-						ethData.SrcMAC,
-						ipData.SrcIP,
-						ethData.DstMAC,
-						ipData.DstIP,
-					)
-
-				} else if ip6Layer != nil {
-
-					ip6Data := ip6Layer.(*layers.IPv6)
-
-					fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
-						layerVal,
-						ethData.SrcMAC,
-						ip6Data.SrcIP,
-						ethData.DstMAC,
-						ip6Data.DstIP,
-					)
-				} else {
-					fmt.Printf("Layer %v packet From : %v to : %v\r\n",
-						layerVal,
-						ethData.SrcMAC,
-						ethData.DstMAC,
-					)
+				macString := net.HardwareAddr(ethData.SrcMAC).String()
+				printPacket := true
+				if *macFilter != "" {
+					printPacket = strings.HasPrefix(strings.ToUpper(macString), strings.ToUpper(*macFilter))
 				}
 
-				fmt.Println(packet)
+				if printPacket {
+					if ipLayer != nil {
+						ipData := ipLayer.(*layers.IPv4)
+
+						fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+							layerVal,
+							ethData.SrcMAC,
+							ipData.SrcIP,
+							ethData.DstMAC,
+							ipData.DstIP,
+						)
+
+					} else if ip6Layer != nil {
+
+						ip6Data := ip6Layer.(*layers.IPv6)
+
+						fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+							layerVal,
+							ethData.SrcMAC,
+							ip6Data.SrcIP,
+							ethData.DstMAC,
+							ip6Data.DstIP,
+						)
+
+					} else {
+
+						fmt.Printf("Layer %v packet From : %v to : %v\r\n",
+							layerVal,
+							ethData.SrcMAC,
+							ethData.DstMAC,
+						)
+
+					}
+
+					fmt.Println(packet)
+				}
 			}
 		}
 	}
@@ -293,12 +303,12 @@ func readARP_Packets(handle *pcap.Handle, iface *net.Interface, stop chan struct
 
 			macString := net.HardwareAddr(arp.SourceHwAddress).String()
 			manuf := getBrand(macString)
-			printValue := true
+			printPacket := true
 			if *macFilter != "" {
-				printValue = strings.HasPrefix(strings.ToUpper(macString), strings.ToUpper(*macFilter))
+				printPacket = strings.HasPrefix(strings.ToUpper(macString), strings.ToUpper(*macFilter))
 			}
 			//Log ARP packets
-			if printValue {
+			if printPacket {
 				fmt.Printf("IP %15s -> %v -> %v", net.IP(arp.SourceProtAddress), macString, manuf)
 				fmt.Println()
 			}
