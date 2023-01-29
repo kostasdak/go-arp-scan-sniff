@@ -19,9 +19,9 @@ import (
 )
 
 var netInterface = flag.Int("iface", -1, "Override the automatic network card, choose a specific interface from the list")
-var scanType = flag.String("type", "scan", "Choose between scan / sniff, scan network every 10 sec or sniff all packets")
+var scanType = flag.String("type", "scan", "Choose between scan/sniff, scan network every 10 sec or sniff all packets")
 var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
-var packetLimit = flag.Int("limit", 0, "Limit the amount of captured packets, use it in busy networks with -mac filter")
+var packetLimit = flag.Int("limit", 0, "Limit the number of captured packets, use it in busy networks with -mac filter")
 var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full addr) 80:ce:62:e8:9b:f5")
 var promiscuousMode = flag.Bool("promisc", true, "Enable/Disable promiscuous mode to monitor network")
 var mac = map[string]string{}
@@ -30,10 +30,12 @@ func main() {
 	flag.Parse()
 
 	if strings.ToLower(*packetFilter) != "all" && strings.ToLower(*packetFilter) != "arp" {
-		log.Fatal("filter option must be arp / all")
+		log.Fatal("filter option must be arp or all")
+		os.Exit(1)
 	}
 	if strings.ToLower(*scanType) != "scan" && strings.ToLower(*scanType) != "sniff" {
-		log.Fatal("scan type must be scan / sniff")
+		log.Fatal("scan type must be scan or sniff")
+		os.Exit(1)
 	}
 
 	var timeout time.Duration = time.Duration(30) * time.Microsecond
@@ -57,12 +59,12 @@ func main() {
 
 	// Loop through interfaces and display to user
 	for i, tmp := range ifaces {
-		fmt.Printf("#%v Interface : %v\r\n", i, tmp.Name)
+		fmt.Printf("#%v Interface: %v\r\n", i, tmp.Name)
 	}
 
 	// User must choose the right interface
 	if *netInterface == -1 {
-		fmt.Println("choose a network interface by using the switch -iface folowing by the number of the interface")
+		fmt.Println("Choose a network interface by using the switch -iface following by the number of the interface")
 		os.Exit(0)
 	}
 
@@ -76,7 +78,7 @@ func main() {
 	iface = ifaces[*netInterface]
 	deviceWinId, deviceWinInterface, err = getInterfaceParams(&iface, &devices)
 	if err != nil {
-		log.Fatalf("Skipping interface %v: %v\r\n", iface.Name, err)
+		log.Fatalf("Error using interface: %v -> %v\r\n", iface.Name, err)
 		os.Exit(1)
 	} else {
 		addrs, _ := iface.Addrs()
@@ -94,10 +96,10 @@ func main() {
 	}
 
 	// Displey info before start
-	fmt.Println("In case you want to choose a different network interface use the switch -iface folowing by the number of the interface")
+	fmt.Println("In case you want to choose a different network interface use the switch -iface following by the number of the interface")
 	fmt.Println("")
 	fmt.Printf("Found interface: %v -> %v\r\n", deviceWinInterface.Name, deviceWinId)
-	fmt.Printf("Interface IP Address : %v\r\n", deviceIPnet.IP)
+	fmt.Printf("Interface IP Address: %v\r\n", deviceIPnet.IP)
 
 	// Build mac address list
 	json.Unmarshal([]byte(macJson), &mac)
@@ -110,6 +112,7 @@ func main() {
 		handle, err := pcap.OpenLive(deviceWinId, 65536, true, pcap.BlockForever)
 		if err != nil {
 			log.Fatal(err)
+			os.Exit(1)
 		}
 		defer handle.Close()
 
@@ -120,7 +123,8 @@ func main() {
 		for {
 			// Send packets to our network.
 			if err := sendARP_Packets(handle, &iface, allIPs, deviceIPnet); err != nil { //&deviceIPnet
-				log.Printf("error writing packets on %v: %v", iface.Name, err)
+				log.Fatalf("error writing packets on %v: %v", iface.Name, err)
+				os.Exit(1)
 			}
 
 			//Sleep 10 until the next loop
@@ -149,7 +153,7 @@ func buildIPs(n *net.IPNet) (out []net.IP) {
 
 func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Duration) {
 	fmt.Println("")
-	log.Printf("Start monitoring interface: %v", deviceWinId)
+	fmt.Printf("Start monitoring interface: %v\r\n", deviceWinId)
 
 	myMac := net.HardwareAddr(iface.HardwareAddr).String()
 	packetCount := 0
@@ -158,6 +162,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 	handle, err := pcap.OpenLive(deviceWinId, 65535, *promiscuousMode, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)
+		os.Exit(1)
 	}
 
 	defer handle.Close()
@@ -165,10 +170,11 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 	// Apply BPF Filter if exists
 	if *packetFilter != "" {
 		if strings.ToLower(*packetFilter) == "arp" {
-			log.Println("Filter applied : ", *packetFilter)
+			fmt.Println("Filter applied: ", *packetFilter)
 			err := handle.SetBPFFilter(*packetFilter)
 			if err != nil {
-				log.Fatalf("error using BPF Filter %s - %v", *packetFilter, err)
+				log.Fatalf("error using BPF filter %s - %v", *packetFilter, err)
+				os.Exit(1)
 			}
 		}
 		if strings.ToLower(*packetFilter) == "all" {
