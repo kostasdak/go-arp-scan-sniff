@@ -37,7 +37,7 @@ Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
         Choose between scan / sniff, scan network every 10 sec or sniff all packets (default "scan")
 ```
 
-## Examples and Use cases
+## Examples and use cases
 
 * Scan network and get all MAC addresses from active devices.
 
