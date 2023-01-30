@@ -28,7 +28,7 @@ Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
   -filter string
         Packet filter for capture, e.g. arp / all (default "arp")
   -iface int
-        Override the automatic network card, choose a specific interface from the list (default -1)
+        Choose a specific interface from the list of network interfaces (default -1)
   -limit int
         Limit the amount of captured packets, use it in busy networks with -mac filter
   -mac string
