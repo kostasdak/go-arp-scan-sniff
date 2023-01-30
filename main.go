@@ -18,7 +18,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var netInterface = flag.Int("iface", -1, "Override the automatic network card, choose a specific interface from the list")
+var netInterface = flag.Int("iface", -1, "Choose a specific interface from the list of network interfaces")
 var scanType = flag.String("type", "scan", "Choose between scan/sniff, scan network every 10 sec or sniff all packets")
 var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
 var packetLimit = flag.Int("limit", 0, "Limit the number of captured packets, use it in busy networks with -mac filter")
