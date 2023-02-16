@@ -24,19 +24,21 @@ __$ go build -o arpscansniff.exe *.go__
 ## Usage
 **$ arpscansniff.exe --help**
 ```shell
-Usage of C:\git\go-arp-scan-sniff\arpscansniff.exe:
+Usage of C:\git\golang\go-arp-scan-sniff\arpscansniff.exe:
+  -file string
+        Log file name and path
   -filter string
         Packet filter for capture, e.g. arp / all (default "arp")
   -iface int
         Choose a specific interface from the list of network interfaces (default -1)
   -limit int
-        Limit the amount of captured packets, use it in busy networks with -mac filter
+        Limit the number of captured packets, use it in busy networks with -mac filter
   -mac string
         Mac address filter, e.g. (3 digits) 30:23:03 / (full addr) 80:ce:62:e8:9b:f5
   -promisc
         Enable/Disable promiscuous mode to monitor network (default true)
   -type string
-        Choose between scan / sniff, scan network every 10 sec or sniff all packets (default "scan")
+        Choose between scan/sniff, scan network every 10 sec or sniff all packets (default "scan")
 ```
 
 ## Examples and use cases
