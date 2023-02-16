@@ -19,12 +19,14 @@ import (
 )
 
 var netInterface = flag.Int("iface", -1, "Choose a specific interface from the list of network interfaces")
+var logFile = flag.String("file", "", "Log file name and path")
 var scanType = flag.String("type", "scan", "Choose between scan/sniff, scan network every 10 sec or sniff all packets")
 var packetFilter = flag.String("filter", "arp", "Packet filter for capture, e.g. arp / all")
 var packetLimit = flag.Int("limit", 0, "Limit the number of captured packets, use it in busy networks with -mac filter")
 var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:23:03 / (full addr) 80:ce:62:e8:9b:f5")
 var promiscuousMode = flag.Bool("promisc", true, "Enable/Disable promiscuous mode to monitor network")
 var mac = map[string]string{}
+var outputFile *os.File
 
 func main() {
 	flag.Parse()
@@ -37,7 +39,10 @@ func main() {
 		log.Fatal("scan type must be scan or sniff")
 		os.Exit(1)
 	}
-
+	if len(*logFile) > 0 {
+		outputFile = openLogFile(*logFile)
+		defer outputFile.Close()
+	}
 	var timeout time.Duration = time.Duration(30) * time.Microsecond
 
 	// Get a list of all interfaces.
@@ -95,7 +100,7 @@ func main() {
 		}
 	}
 
-	// Displey info before start
+	// Display info before start
 	fmt.Println("In case you want to choose a different network interface use the switch -iface following by the number of the interface")
 	fmt.Println("")
 	fmt.Printf("Found interface: %v -> %v\r\n", deviceWinInterface.Name, deviceWinId)
@@ -197,12 +202,18 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 			arpLayer := packet.Layer(layers.LayerTypeARP)
 			if arpLayer != nil {
 				arpData := arpLayer.(*layers.ARP)
-				fmt.Printf("ARP Packet From : %v = %v, to : %v, %v\r\n",
+				line := fmt.Sprintf("ARP Packet From : %v = %v, to : %v, %v",
 					net.HardwareAddr(arpData.SourceHwAddress),
 					net.IP(arpData.SourceProtAddress),
 					net.HardwareAddr(arpData.DstHwAddress),
 					net.IP(arpData.DstProtAddress))
+
+				fmt.Println(line)
 				fmt.Println(packet)
+				if len(*logFile) > 0 {
+					outputFile.WriteString(line + "\r\n")
+					outputFile.WriteString(packet.String() + "\r\n")
+				}
 				packetCount++
 				if packetCount == *packetLimit {
 					os.Exit(0)
@@ -223,10 +234,11 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 				}
 
 				if printPacket {
+					line := ""
 					if ipLayer != nil {
 						ipData := ipLayer.(*layers.IPv4)
 
-						fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+						line = fmt.Sprintf("Layer %v packet From : %v = %v, to : %v, %v",
 							layerVal,
 							ethData.SrcMAC,
 							ipData.SrcIP,
@@ -238,7 +250,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 
 						ip6Data := ip6Layer.(*layers.IPv6)
 
-						fmt.Printf("Layer %v packet From : %v = %v, to : %v, %v\r\n",
+						line = fmt.Sprintf("Layer %v packet From : %v = %v, to : %v, %v",
 							layerVal,
 							ethData.SrcMAC,
 							ip6Data.SrcIP,
@@ -248,15 +260,19 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 
 					} else {
 
-						fmt.Printf("Layer %v packet From : %v to : %v\r\n",
+						line = fmt.Sprintf("Layer %v packet From : %v to : %v",
 							layerVal,
 							ethData.SrcMAC,
 							ethData.DstMAC,
 						)
-
 					}
 
+					fmt.Println(line)
 					fmt.Println(packet)
+					if len(*logFile) > 0 {
+						outputFile.WriteString(line + "\r\n")
+						outputFile.WriteString(packet.String() + "\r\n")
+					}
 					packetCount++
 					if packetCount == *packetLimit {
 						os.Exit(0)
@@ -337,8 +353,12 @@ func readARP_Packets(handle *pcap.Handle, iface *net.Interface, stop chan struct
 			}
 			//Log ARP packets
 			if printPacket {
-				fmt.Printf("IP %15s -> %v -> %v", net.IP(arp.SourceProtAddress), macString, manuf)
-				fmt.Println()
+				line := fmt.Sprintf("IP %15s -> %v -> %v", net.IP(arp.SourceProtAddress), macString, manuf)
+
+				fmt.Println(line)
+				if len(*logFile) > 0 {
+					outputFile.WriteString(line + "\r\n")
+				}
 			}
 		}
 	}
@@ -370,6 +390,9 @@ func sendARP_Packets(handle *pcap.Handle, iface *net.Interface, addresses []net.
 	}
 
 	fmt.Println("*")
+	if len(*logFile) > 0 {
+		outputFile.WriteString("*\r\n")
+	}
 
 	// Send ARP packets.
 	for _, ip := range addresses {
@@ -380,4 +403,12 @@ func sendARP_Packets(handle *pcap.Handle, iface *net.Interface, addresses []net.
 		}
 	}
 	return nil
+}
+
+func openLogFile(filename string) *os.File {
+	var file, err = os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	return file
 }
