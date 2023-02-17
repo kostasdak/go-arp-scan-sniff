@@ -13447,6 +13447,7 @@ var macJson = `
 	"00FD45": "Hewlett Packard Enterprise",
 	"00FD4C": "Nevatec",
 	"00FEC8": "Cisco Systems, Inc",
+	"01005E": "Multicast address",
 	"010ECF": "PROFINET Multicast",
 	"020406": "BBN====internal usage (not registered)",
 	"020701": "Interlan [now Racal-InterLAN]=DEC (UNIBUS or QBUS), Apollo, Cisco",

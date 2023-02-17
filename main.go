@@ -202,6 +202,12 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 			arpLayer := packet.Layer(layers.LayerTypeARP)
 			if arpLayer != nil {
 				arpData := arpLayer.(*layers.ARP)
+
+				macString := net.HardwareAddr(arpData.SourceHwAddress).String()
+				manuf1 := getBrand(macString)
+				macString = net.HardwareAddr(arpData.DstHwAddress).String()
+				manuf2 := getBrand(macString)
+
 				line := fmt.Sprintf("ARP Packet From : %v = %v, to : %v, %v",
 					net.HardwareAddr(arpData.SourceHwAddress),
 					net.IP(arpData.SourceProtAddress),
@@ -209,6 +215,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 					net.IP(arpData.DstProtAddress))
 
 				fmt.Println(line)
+				fmt.Println(manuf1 + " <> " + manuf2)
 				fmt.Println(packet)
 				if len(*logFile) > 0 {
 					outputFile.WriteString(line + "\r\n")
@@ -235,6 +242,11 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 
 				if printPacket {
 					line := ""
+					macString := net.HardwareAddr(ethData.SrcMAC).String()
+					manuf1 := getBrand(macString)
+					macString = net.HardwareAddr(ethData.DstMAC).String()
+					manuf2 := getBrand(macString)
+
 					if ipLayer != nil {
 						ipData := ipLayer.(*layers.IPv4)
 
@@ -268,6 +280,7 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 					}
 
 					fmt.Println(line)
+					fmt.Println(manuf1 + " <> " + manuf2)
 					fmt.Println(packet)
 					if len(*logFile) > 0 {
 						outputFile.WriteString(line + "\r\n")
