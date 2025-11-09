@@ -31,6 +31,7 @@ var countRecords int32
 
 func main() {
 	flag.Parse()
+	countRecords = -1
 
 	if strings.ToLower(*packetFilter) != "all" && strings.ToLower(*packetFilter) != "arp" {
 		log.Fatal("filter option must be arp or all")
@@ -435,13 +436,15 @@ func sendARP_Packets(handle *pcap.Handle, iface *net.Interface, addresses []net.
 		ComputeChecksums: true,
 	}
 
-	fmt.Println("-----------------------------------------")
-	fmt.Println(fmt.Sprint(countRecords) + " records found")
-	fmt.Println("")
-	if len(*logFile) > 0 {
-		outputFile.WriteString("-----------------------------------------\r\n")
-		outputFile.WriteString(fmt.Sprint(countRecords) + " records found")
-		outputFile.WriteString("")
+	if countRecords > -1 {
+		fmt.Println("-----------------------------------------")
+		fmt.Println(fmt.Sprint(countRecords) + " records found")
+		fmt.Println("")
+		if len(*logFile) > 0 {
+			outputFile.WriteString("-----------------------------------------\r\n")
+			outputFile.WriteString(fmt.Sprint(countRecords) + " records found")
+			outputFile.WriteString("")
+		}
 	}
 	countRecords = 0
 
