@@ -27,6 +27,7 @@ var macFilter = flag.String("mac", "", "Mac address filter, e.g. (3 digits) 30:2
 var promiscuousMode = flag.Bool("promisc", true, "Enable/Disable promiscuous mode to monitor network")
 var mac = map[string]string{}
 var outputFile *os.File
+var countRecords int32
 
 func main() {
 	flag.Parse()
@@ -63,8 +64,11 @@ func main() {
 	var iface net.Interface
 
 	// Loop through interfaces and display to user
-	for i, tmp := range ifaces {
-		fmt.Printf("#%v Interface: %v\r\n", i, tmp.Name)
+	for i, tmpInt := range ifaces {
+		tmpIPNet := getInterfaceIP(tmpInt)
+		if !strings.HasPrefix(tmpIPNet.IP.String(), "169.254") && !strings.HasPrefix(tmpIPNet.IP.String(), "127.0.0") {
+			fmt.Printf("#%v Interface: %v [%v]\r\n", i, tmpInt.Name, tmpIPNet.IP)
+		}
 	}
 
 	// User must choose the right interface
@@ -142,6 +146,25 @@ func main() {
 	}
 }
 
+func getInterfaceIP(iface net.Interface) *net.IPNet {
+	var returnIPnet *net.IPNet
+
+	addrs, _ := iface.Addrs()
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok {
+			if ip4 := ipnet.IP.To4(); ip4 != nil {
+				returnIPnet = &net.IPNet{
+					IP:   ip4, //net.IPv4(0, 0, 0, 0), //ip4,
+					Mask: ipnet.Mask[len(ipnet.Mask)-4:],
+				}
+				break
+			}
+		}
+	}
+
+	return returnIPnet
+}
+
 func buildIPs(n *net.IPNet) (out []net.IP) {
 	num := binary.BigEndian.Uint32([]byte(n.IP))
 	mask := binary.BigEndian.Uint32([]byte(n.Mask))
@@ -204,26 +227,35 @@ func sniffMyNetwork(deviceWinId string, iface *net.Interface, timeout time.Durat
 				arpData := arpLayer.(*layers.ARP)
 
 				macString := net.HardwareAddr(arpData.SourceHwAddress).String()
-				manuf1 := getBrand(macString)
-				macString = net.HardwareAddr(arpData.DstHwAddress).String()
-				manuf2 := getBrand(macString)
-
-				line := fmt.Sprintf("ARP Packet From : %v = %v, to : %v, %v",
-					net.HardwareAddr(arpData.SourceHwAddress),
-					net.IP(arpData.SourceProtAddress),
-					net.HardwareAddr(arpData.DstHwAddress),
-					net.IP(arpData.DstProtAddress))
-
-				fmt.Println(line)
-				fmt.Println(manuf1 + " <> " + manuf2)
-				fmt.Println(packet)
-				if len(*logFile) > 0 {
-					outputFile.WriteString(line + "\r\n")
-					outputFile.WriteString(packet.String() + "\r\n")
+				printPacket := true
+				if *macFilter != "" {
+					printPacket = strings.HasPrefix(strings.ToUpper(macString), strings.ToUpper(*macFilter))
 				}
-				packetCount++
-				if packetCount == *packetLimit {
-					os.Exit(0)
+
+				if printPacket {
+					manuf1 := getBrand(macString)
+					macString = net.HardwareAddr(arpData.DstHwAddress).String()
+					manuf2 := getBrand(macString)
+
+					line := fmt.Sprintf("\r\nARP Packet From : %v = %v, to : %v, %v",
+						net.HardwareAddr(arpData.SourceHwAddress),
+						net.IP(arpData.SourceProtAddress),
+						net.HardwareAddr(arpData.DstHwAddress),
+						net.IP(arpData.DstProtAddress))
+
+					fmt.Println(line)
+					fmt.Println(manuf1 + " <> " + manuf2)
+					fmt.Println(packet)
+					if len(*logFile) > 0 {
+						outputFile.WriteString(line + "\r\n")
+						outputFile.WriteString(packet.String() + "\r\n")
+					}
+					packetCount++
+					if packetCount == *packetLimit {
+						os.Exit(0)
+					}
+				} else {
+					fmt.Print(".")
 				}
 			}
 		} else {
@@ -367,8 +399,9 @@ func readARP_Packets(handle *pcap.Handle, iface *net.Interface, stop chan struct
 			//Log ARP packets
 			if printPacket {
 				line := fmt.Sprintf("IP %15s -> %v -> %v", net.IP(arp.SourceProtAddress), macString, manuf)
-
 				fmt.Println(line)
+				countRecords++
+
 				if len(*logFile) > 0 {
 					outputFile.WriteString(line + "\r\n")
 				}
@@ -402,10 +435,15 @@ func sendARP_Packets(handle *pcap.Handle, iface *net.Interface, addresses []net.
 		ComputeChecksums: true,
 	}
 
-	fmt.Println("*")
+	fmt.Println("-----------------------------------------")
+	fmt.Println(fmt.Sprint(countRecords) + " records found")
+	fmt.Println("")
 	if len(*logFile) > 0 {
-		outputFile.WriteString("*\r\n")
+		outputFile.WriteString("-----------------------------------------\r\n")
+		outputFile.WriteString(fmt.Sprint(countRecords) + " records found")
+		outputFile.WriteString("")
 	}
+	countRecords = 0
 
 	// Send ARP packets.
 	for _, ip := range addresses {

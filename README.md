@@ -7,6 +7,7 @@ This is a Golang CLI command easy to use and troubleshoot local networks Link La
 It contains a manufacturer database to resolve each mac address to the Brand/Manufacturer that belongs.</br>
 
 Inspired from many packet sniffers around github and https://pkg.go.dev/github.com/google/gopacket package.</br>
+For windows npcap is required https://npcap.com/dist/</br>
 </br>
 Choose between scan OR sniff, scan network every 10 sec or sniff all packets (default "scan")</br>
 
